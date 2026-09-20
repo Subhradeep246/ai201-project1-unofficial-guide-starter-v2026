@@ -82,22 +82,23 @@ def fallback_split(
 
 def split_documents(documents: list[Document]) -> list[Chunk]:
     """
-    Split documents into chunks. ⚠️ REPLACE THE BODY OF THIS IN MILESTONE 3.
+    Keep each short campus-life post as one complete chunk.
 
-    Right now it just calls the fallback. That is the plain, generic behaviour
-    the brief is talking about.
-
-    When you write your own strategy, set `produced_by` to
-    "chunker.py::split_documents" so your README's Sample Chunks section names
-    the right function. `app.py chunks` prints that string for you.
-
-    Things worth thinking about before you write any code:
-      - Are your documents short posts or long guides?
-      - Is the useful information in one sentence, or spread over a paragraph?
-      - Would splitting on paragraph breaks keep more thoughts intact than
-        splitting on a character count?
+    The selected corpus has 88 self-contained posts and its longest document
+    is only 549 characters. Splitting those posts would separate compact facts
+    from their titles or surrounding context without reducing an oversized
+    document, while overlap would only duplicate whole facts in the index.
     """
-    return fallback_split(documents)
+    return [
+        Chunk(
+            text=doc.text.strip(),
+            source=doc.source,
+            index=0,
+            produced_by="chunker.py::split_documents",
+        )
+        for doc in documents
+        if doc.text.strip()
+    ]
 
 
 def describe(chunks: list[Chunk]) -> str:
