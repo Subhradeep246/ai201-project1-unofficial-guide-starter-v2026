@@ -23,8 +23,11 @@ For at least 4 of my 5 test questions, the retrieved chunks include one that
 contains the answer.
 
 **Why this target:**
-<!-- e.g. "One of my questions is about a topic only two documents mention, so
-     I expect that one to be hard." -->
+The five questions ask for facts in different parts of the campus-life corpus.
+Four are each answered by one clearly named document, while the Kestrel Commons
+question has both an original post and a follow-up that retrieval may rank in
+either order. I expect the top five results to cover at least four questions
+reliably without assuming retrieval will be perfect.
 
 ---
 
@@ -33,8 +36,10 @@ contains the answer.
 Every answer the system produces names at least one source document.
 
 **Why this target:**
-<!-- Why all five and not four? What about your setup makes that achievable —
-     or what would have to go wrong for it not to be? -->
+The generation prompt receives source metadata with every retrieved chunk, so
+naming a source is possible for every answer rather than only for the easiest
+questions. A missing source would make the answer hard to verify, so anything
+below five out of five is not acceptable.
 
 ---
 
@@ -50,48 +55,37 @@ in at least 4 of 5 tries.
      just keep five of them, or the "4 of 5" above has nothing to be 4 of. -->
 
 **Why this target:**
-<!-- What did your distances look like when you set the cutoff in Milestone 4?
-     Was there a clean gap, or did the two groups overlap? -->
+I will set the cutoff from the ten measured best distances in Milestone 4. I am
+allowing one miss because short campus posts share broad words such as
+"student," "course," and "campus" with unrelated questions, which can make one
+out-of-corpus query look closer than it really is.
 
 ---
 
-## 4. Something about your chunks
+## 4. Sampled chunks preserve complete posts
 
-<!-- YOU WRITE THIS ONE.
-
-     How would you know if your chunks were the right size? Name something
-     countable or observable.
-
-     Examples of the right shape — don't copy these, they should come from
-     what you actually saw in Milestone 3:
-       - "At least 4 of 5 sampled chunks read as a complete thought, with no
-          sentence cut in half at either end."
-       - "No chunk is shorter than 200 characters, since anything below that
-          in my corpus turned out to be a heading with no content under it." -->
-
-
+All 5 sampled chunks contain one complete source post, including its title,
+with no sentence cut off at either end.
 
 **Why this target:**
-
-
+The campus-life documents are short posts (the longest is 549 characters) and
+their useful fact usually sits in one sentence. Keeping each post intact
+preserves its context and makes a partial sentence in any sampled chunk a sign
+that the chunker is doing the wrong thing for this corpus.
 
 ---
 
-## 5. Your choice
+## 5. Answers include the expected factual detail
 
-<!-- YOU WRITE THIS ONE TOO.
-
-     Pick something you actually care about getting right. It could be about
-     speed, about refusals, about a particular kind of question your corpus
-     handles badly, about source attribution being correct rather than merely
-     present — anything, as long as it names a number or an observable
-     outcome. -->
-
-
+At least 4 of the 5 test answers contain the expected fact recorded beside the
+question in `questions.py` (minor wording and punctuation differences are
+allowed).
 
 **Why this target:**
-
-
+These questions ask for concrete times, limits, or named sessions, so a fluent
+but vague response is not useful. I chose four rather than five because model
+wording can vary even when retrieval supplies the correct post, while four of
+five still requires accurate coverage across several kinds of campus facts.
 
 ---
 
