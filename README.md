@@ -2,44 +2,30 @@
 
 **Subhradeep Acharjee — `campus_life` corpus**
 
-> **This file is your submission.** Fill it in as you go — most sections get
-> written during the milestone that produces them, not at the end.
->
-> How the starter works, and every command you'll need, is in `RUNNING.md`.
-> Leave that file alone.
->
-> **Paste everything as text.** No screenshots, no video. A typed table gets
-> full credit; a picture of the same table gets none.
->
-> Delete these instruction blocks as you replace them. The `<!-- -->` comments
-> are notes to you and don't show up when the page renders — you can leave them
-> or remove them.
-
 ---
 
 # Unit 1
 
 ## What This Does
 
-The Unofficial Guide is a retrieval-augmented question-answering system built
-over the `campus_life` corpus. It searches 88 short student posts about dining,
-housing, courses, transport, study spaces, and university procedures, then
-uses the closest posts to answer concrete campus-life questions. A relevance
-gate refuses questions when none of the posts is close enough, and each answer
-is required to name the source document so a reader can verify it.
+I used the `campus_life` corpus to build a guide that answers practical
+questions students might have about campus. The 88 posts cover things like
+dining halls, housing, classes, transportation, and study spaces. When someone
+asks a question, the program finds the most relevant posts and uses them to
+write an answer with a source. If the question is not covered by the corpus,
+the program says it does not have enough information instead of guessing.
 
 ## Chunking Strategy
 
 **Chunk size:** 600 characters (a ceiling; each source post remains one chunk)
 **Overlap:** 0 characters
 
-The 88 campus-life documents average 317 characters and the longest is only
-549 characters. While reading them, I found that each file is already a small,
-self-contained post and that the useful fact usually appears in a single
-sentence whose title and surrounding context help interpret it. I therefore
-changed the starter's generic 800-character windows with 120-character overlap
-to one complete document per chunk; a 600-character ceiling describes the
-largest expected post, and overlap would only duplicate facts across chunks.
+I noticed that these documents are already very short. They average 317
+characters, and even the longest one is only 549 characters. Most of them also
+cover one topic from beginning to end, so splitting them would separate a fact
+from useful context such as the post title. I decided to keep each post as one
+chunk. I set the size to 600 characters so the longest post fits, and I used no
+overlap because it would only repeat the same information.
 
 ## Sample Chunks
 
@@ -111,10 +97,10 @@ Sources retrieved: admin_housing_lottery.txt, admin_parking_permits.txt, advisin
 
 **My relevance cutoff:** `0.65`
 
-The five in-corpus questions had best distances from 0.2101 to 0.4296, while
-the five out-of-scope questions ranged from 0.8246 to 0.9340. That left a wide
-gap between 0.4296 and 0.8246. I chose 0.65 inside that gap, leaving margin on
-both sides rather than placing the cutoff next to either observed group.
+There was a clear difference between the two groups of questions. The five
+questions that the corpus could answer had distances between 0.2101 and
+0.4296. The five unrelated questions had distances between 0.8246 and 0.9340.
+I chose 0.65 because it sits comfortably in the gap between those groups.
 
 | Question | In corpus? | Best distance |
 |---|---|---|
@@ -131,17 +117,18 @@ both sides rather than placing the cutoff next to either observed group.
 
 ## How I Used AI
 
-**1.** I asked Codex to check whether my first five test questions could be
-answered from `campus_life`. It found that exam deadlines, general academic
-resources, and sports facilities were not actually present. I replaced those
-vague or out-of-corpus questions with five specific questions, then checked
-each expected fact directly in its source document.
+**1.** My first set of test questions included exam deadlines, general
+academic resources, and sports facilities. I asked Codex to check whether the
+corpus actually covered them. It pointed out that those answers were not in
+the documents, so I replaced them with more specific questions about the
+housing lottery, orientation, dining, study rooms, and the shuttle. I opened
+the source files afterward and checked each expected answer myself.
 
-**2.** I asked Codex to compare the corpus's document lengths with the starter
-chunker. It reported 88 documents averaging 317 characters with a maximum of
-549, so I changed its suggestion into a simple one-post-per-chunk strategy with
-no overlap. I verified the result by asserting that all 88 output chunks match
-their complete input documents and by inspecting the five samples above.
+**2.** I also asked Codex to help me understand whether the starter chunk size
+made sense for this corpus. It calculated that the 88 documents average 317
+characters and that the longest is 549. Based on that, I kept each post as a
+single chunk and removed the overlap. I then checked five printed samples and
+verified that all 88 chunks matched the complete original posts.
 
 <!-- ── Stretch features ─────────────────────────────────────────────────────
      Doing one? Say so here BEFORE you start. A feature this README never

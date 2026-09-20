@@ -23,11 +23,10 @@ For at least 4 of my 5 test questions, the retrieved chunks include one that
 contains the answer.
 
 **Why this target:**
-The five questions ask for facts in different parts of the campus-life corpus.
-Four are each answered by one clearly named document, while the Kestrel Commons
-question has both an original post and a follow-up that retrieval may rank in
-either order. I expect the top five results to cover at least four questions
-reliably without assuming retrieval will be perfect.
+My questions cover several different parts of campus life. Four have one main
+source, while the Kestrel Commons question can match either the original post
+or its follow-up. I chose four out of five because I expect retrieval to work
+most of the time, but I do not want to assume it will be perfect.
 
 ---
 
@@ -36,10 +35,10 @@ reliably without assuming retrieval will be perfect.
 Every answer the system produces names at least one source document.
 
 **Why this target:**
-The generation prompt receives source metadata with every retrieved chunk, so
-naming a source is possible for every answer rather than only for the easiest
-questions. A missing source would make the answer hard to verify, so anything
-below five out of five is not acceptable.
+Every retrieved chunk already includes its source filename, so the system has
+the information it needs to cite a source every time. Without that source, a
+student would have no easy way to check the answer, so I want all five answers
+to include one.
 
 ---
 
@@ -55,10 +54,10 @@ in at least 4 of 5 tries.
      just keep five of them, or the "4 of 5" above has nothing to be 4 of. -->
 
 **Why this target:**
-I will set the cutoff from the ten measured best distances in Milestone 4. I am
-allowing one miss because short campus posts share broad words such as
-"student," "course," and "campus" with unrelated questions, which can make one
-out-of-corpus query look closer than it really is.
+I will choose the cutoff after comparing the five test questions with five
+unrelated questions. I am allowing one miss because common words such as
+"student," "course," and "campus" could make an unrelated question look more
+relevant than it really is.
 
 ---
 
@@ -68,10 +67,10 @@ All 5 sampled chunks contain one complete source post, including its title,
 with no sentence cut off at either end.
 
 **Why this target:**
-The campus-life documents are short posts (the longest is 549 characters) and
-their useful fact usually sits in one sentence. Keeping each post intact
-preserves its context and makes a partial sentence in any sampled chunk a sign
-that the chunker is doing the wrong thing for this corpus.
+The documents are short posts, and the longest one is only 549 characters.
+Keeping a whole post together preserves its title and surrounding context. If
+one of the samples cuts off a sentence, that would show that my chunking choice
+is not working as intended.
 
 ---
 
@@ -82,10 +81,10 @@ question in `questions.py` (minor wording and punctuation differences are
 allowed).
 
 **Why this target:**
-These questions ask for concrete times, limits, or named sessions, so a fluent
-but vague response is not useful. I chose four rather than five because model
-wording can vary even when retrieval supplies the correct post, while four of
-five still requires accurate coverage across several kinds of campus facts.
+The questions ask for specific times, limits, or session names, so a vague
+answer would not be very helpful. I chose four out of five because the model's
+wording may vary, even when it receives the correct source, but it should still
+get the important fact right most of the time.
 
 ---
 
