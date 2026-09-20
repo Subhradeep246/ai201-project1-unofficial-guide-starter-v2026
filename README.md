@@ -104,11 +104,9 @@ Laundry costs $1.75 wash, $1.75 dry, app-based. On noise: moderate; the building
 **Answer:**
 
 ```
-No. Rising sophomores receive random numbers, but juniors and seniors are
-ordered by accumulated credit hours and use randomness only to break ties.
-Housing numbers are released in the second week of March.
+No, the housing lottery is not completely random; rising sophomores get a random number, but juniors and seniors are ordered by accumulated credit hours first with random tie-breaks. Numbers are released the second week of March. (Source: admin_housing_lottery.txt)
 
-Source: admin_housing_lottery.txt
+Sources retrieved: admin_housing_lottery.txt, admin_parking_permits.txt, advising_registration.txt, dining_the_atrium_followup.txt, housing_morrow_house.txt
 ```
 
 **My relevance cutoff:** `0.65`
