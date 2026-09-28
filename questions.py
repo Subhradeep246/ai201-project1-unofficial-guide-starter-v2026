@@ -23,24 +23,45 @@ names a target of "4 of 5", and four of three is not a thing.
 
 QUESTIONS = [
     {
-        "question": "Is the housing lottery completely random, and when are numbers released?",
-        "expects": "second week of March",
+        "question": (
+            "Are all CS 210 exams curved, or is the policy different for "
+            "midterms and the final?"
+        ),
+        "expects": "midterms are curved; final is not",
     },
     {
-        "question": "Which two orientation sessions are most worth attending?",
-        "expects": "academic adviser and library walkthrough",
+        "question": (
+            "If I miss the course-drop deadline, how long can I still withdraw, "
+            "what approval is required, and how does it affect my transcript and GPA?"
+        ),
+        "expects": "week ten; adviser signature; W on the transcript; does not affect GPA",
     },
     {
-        "question": "How long is the lunch wait at Kestrel Commons, and when is it shorter?",
-        "expects": "20 to 25 minutes; before 11:45",
+        "question": (
+            "How late can I switch a course to pass/fail, what grade counts as "
+            "a pass, and what are both usage limits?"
+        ),
+        "expects": "week eight; C- or better; two per year; maximum eight across a degree",
     },
     {
-        "question": "How far ahead can group study rooms be booked, and what is the weekly limit?",
-        "expects": "two weeks; two two-hour blocks per person",
+        "question": (
+            "Compare official electronic and postal transcripts with unofficial "
+            "ones: what do they cost and how long does each take?"
+        ),
+        "expects": (
+            "official transcripts cost $8; three business days electronically; "
+            "ten by post; unofficial ones are free and instant"
+        ),
     },
     {
-        "question": "How often does the campus shuttle run on weekdays and weekends?",
-        "expects": "every 20 minutes; every 40 minutes",
+        "question": (
+            "At Morrow House, how many washers and dryers are there, and when is "
+            "the best and worst time to do laundry?"
+        ),
+        "expects": (
+            "eight washers; six dryers; Tuesday or Wednesday morning; "
+            "Sunday after 6pm"
+        ),
     },
 ]
 
@@ -63,3 +84,6 @@ OUT_OF_SCOPE = [
 def answered() -> list[dict]:
     """The questions you've actually filled in."""
     return [q for q in QUESTIONS if q.get("question", "").strip()]
+
+
+# defining criteria:chunk info, chunked good?, retrieved good?, stress cases 
