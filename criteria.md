@@ -86,6 +86,17 @@ answer would not be very helpful. I chose four out of five because the model's
 wording may vary, even when it receives the correct source, but it should still
 get the important fact right most of the time.
 
+> **Revised in unit 2:** Same target — at least 4 of 5 answers contain every
+> expected fact from `questions.py`. I score this by reading the answer and
+> allowing minor wording (`ten days by post` for `ten by post`, `your
+> transcript` for `the transcript`). I do not treat a RapidFuzz score under 95
+> as a miss when the fact is clearly there.
+>
+> **Why revised:** The original criterion already said minor wording is
+> allowed, but `scorer.py` at threshold 95 could not measure that the same way
+> twice. Two answers that a person would mark correct failed the automated
+> check. The target did not change; only the measurement did.
+
 ---
 
 <!-- ─────────────────────────────────────────────────────────────────────────
