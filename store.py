@@ -18,8 +18,11 @@ rest of the project if they were wrong:
 """
 
 import os
+import re
 import shutil
 from dataclasses import dataclass
+
+from rank_bm25 import BM25Okapi
 
 # Must be set BEFORE chromadb is imported. Without it, some Chroma versions
 # print "Failed to send telemetry event ..." on every single call — which looks
@@ -45,6 +48,43 @@ class Result:
 
 
 _model = None
+_lexical = {}
+
+# Hybrid search: take this many candidates from each side, then fuse ranks.
+HYBRID_POOL = 20
+RRF_K = 60
+
+
+def _tokenize(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9$]+", (text or "").lower())
+
+
+def _lexical_corpus(collection, name: str):
+    """Build a BM25 index of the collection once and reuse it."""
+    cached = _lexical.get(name)
+    if cached is not None:
+        return cached
+
+    raw = collection.get(include=["documents", "metadatas"])
+    ids = list(raw["ids"])
+    documents = list(raw["documents"])
+    metadatas = list(raw["metadatas"])
+    bm25 = BM25Okapi([_tokenize(doc) for doc in documents])
+    by_id = {
+        doc_id: (doc, meta)
+        for doc_id, doc, meta in zip(ids, documents, metadatas)
+    }
+    _lexical[name] = (ids, bm25, by_id)
+    return _lexical[name]
+
+
+def _rrf(*ranked_id_lists: list[str]) -> list[str]:
+    """Reciprocal rank fusion: combine two rankings without mixing raw scores."""
+    scores: dict[str, float] = {}
+    for ranked in ranked_id_lists:
+        for rank, doc_id in enumerate(ranked, start=1):
+            scores[doc_id] = scores.get(doc_id, 0.0) + 1.0 / (RRF_K + rank)
+    return sorted(scores, key=scores.get, reverse=True)
 
 # The model Chroma bundles. Anything else in config.EMBEDDING_MODEL means
 # "fetch that one from Hugging Face instead" — see `_embedder`.
@@ -149,6 +189,7 @@ def build_index(
     """
     name = config.collection_name(corpus, variant)
     client = _client()
+    _lexical.pop(name, None)
 
     try:
         client.delete_collection(name)
@@ -185,9 +226,11 @@ def search(
     variant: str = "default",
 ) -> list[Result]:
     """
-    Retrieve the chunks closest in meaning to a question.
+    Retrieve the chunks closest to a question.
 
-    Returns them nearest-first, each with its distance.
+    Semantic search (cosine) and BM25 keyword search are fused with
+    reciprocal rank fusion. Distances on the returned rows stay cosine
+    distances so the relevance gate is unchanged.
     """
     top_k = top_k or config.TOP_K
     name = config.collection_name(corpus, variant)
@@ -199,21 +242,53 @@ def search(
             f"No index called '{name}'. Run `python app.py index` first."
         ) from exc
 
+    count = collection.count()
+    pool = min(max(top_k, HYBRID_POOL), count)
     raw = collection.query(
         query_embeddings=embed([question]),
-        n_results=min(top_k, collection.count()),
+        n_results=pool,
     )
 
+    semantic_ids = list(raw["ids"][0])
+    semantic_distance = {
+        doc_id: float(distance)
+        for doc_id, distance in zip(semantic_ids, raw["distances"][0])
+    }
+    semantic_payload = {
+        doc_id: (text, meta)
+        for doc_id, text, meta in zip(
+            semantic_ids, raw["documents"][0], raw["metadatas"][0]
+        )
+    }
+
+    ids, bm25, by_id = _lexical_corpus(collection, name)
+    lexical_ranked = [
+        doc_id
+        for doc_id, _score in sorted(
+            zip(ids, bm25.get_scores(_tokenize(question))),
+            key=lambda item: item[1],
+            reverse=True,
+        )[:pool]
+    ]
+
+    fused = _rrf(semantic_ids, lexical_ranked)
+    # Keep the closest semantic hit so the gate still sees the same best
+    # cosine distance it would have seen before the rerank.
+    if semantic_ids and semantic_ids[0] not in fused[:top_k]:
+        fused = [semantic_ids[0]] + [doc_id for doc_id in fused if doc_id != semantic_ids[0]]
+
     results: list[Result] = []
-    for text, meta, distance in zip(
-        raw["documents"][0], raw["metadatas"][0], raw["distances"][0]
-    ):
+    for doc_id in fused[:top_k]:
+        if doc_id in semantic_payload:
+            text, meta = semantic_payload[doc_id]
+        else:
+            text, meta = by_id[doc_id]
         results.append(
             Result(
                 text=text,
                 source=str(meta.get("source", "unknown")),
                 label=f"{meta.get('source', 'unknown')}#{meta.get('index', 0)}",
-                distance=float(distance),
+                distance=semantic_distance.get(doc_id, 1.0),
                 produced_by=str(meta.get("produced_by", "unknown")),
             )
         )
@@ -236,5 +311,6 @@ def index_exists(corpus: str | None = None, variant: str = "default") -> bool:
 
 def reset():
     """Delete every index. Occasionally the fastest way out of a mess."""
+    _lexical.clear()
     if config.CHROMA_DIR.exists():
         shutil.rmtree(config.CHROMA_DIR)
